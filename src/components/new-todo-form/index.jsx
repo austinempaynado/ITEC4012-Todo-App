@@ -1,20 +1,42 @@
 import {useForm} from 'react-hook-form';
 import { Input } from '../input-field';
+import { v1 as uuidv1} from 'uuid';
+import {useContext} from 'react'
+import {TodosContext} from '../../context/todos-context'
 import "./styles.css"
+//use it to going to places in our app programatically
+import {useHistory} from 'react-router-dom'
 
 export const NewTodoForm = () =>{
 
     //register allows us to register our input fields
     //handleSubmit called at the very end when all form values are valid
     //formState: if there's invalid inputs it will throw an error
-    const {register, handleSubmit, formState: {errors }}=useForm(); 
+    const todoContext = useContext(TodosContext);
+    //routing is tracked by a history object, react will keep track of this
+    let history = useHistory();
+
+    const {register, handleSubmit, formState: {errors}}=useForm(); 
+
     const onSubmit = (data) =>{
-        console.log(data)
+        const todo = data
+
+        //add unique id to the todo
+        todo.id = uuidv1();
+
+        // default status of false
+        todo.isComplete = false; 
+
+        // add the todo to the global state/context
+        todoContext.addTodo(todo);
+        console.log("Added new todo", todo);
+
+        //navigate to the home page
+        history.push("/");
     }
 
     return(
-        <form onSubmit={handleSubmit()}>
-            {/* add input fields */}
+        <form onSubmit={handleSubmit(onSubmit)}>
             <Input
                 type = "text"
                 name = "title"
@@ -35,7 +57,7 @@ export const NewTodoForm = () =>{
 
             <Input  
                 type = "date"
-                name = "dateofTodo"
+                name = "date"
                 label = "Due Date"
                 errors = {errors}
                 register = {register}
